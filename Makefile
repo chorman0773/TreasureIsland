@@ -2,7 +2,7 @@
 CDIALECT = c11
 
 INCLUDES += ./include
-LIBS += 
+LIBS += m
 DEFINES += TIGAME_COM_ABI=0
 
 ALL_CFLAGS = $(CFLAGS) -pthread $(foreach include,$(INCLUDES),-I$(include)) $(foreach define,$(DEFINES),-D$(define)) -std=$(CDIALECT)
@@ -18,7 +18,7 @@ endif
 
 
 
-ALL_LDFLAGS = $(LD_FLAGS) -pthread
+ALL_LDFLAGS = $(LD_FLAGS) -pthread $(foreach library,$(LIBS),-l$(library))
 
 OBJECTS := out/Random.o out/Main.o out/Food.o out/Game.o
 
