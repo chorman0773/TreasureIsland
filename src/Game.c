@@ -62,9 +62,13 @@ struct GameCalls CALLS = {
 
 Game* tigame_Game_allocateCOMStructure(){
 	Game* structure = malloc(sizeof(Game)+sizeof(struct GameData));
+
+	return structure;
 }
 
-void tigame_Game_cleanup()
+void tigame_Game_cleanup(){
+
+}
 
 
 

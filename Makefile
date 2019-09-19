@@ -20,7 +20,7 @@ endif
 
 ALL_LDFLAGS = $(LD_FLAGS) -pthread
 
-OBJECTS := out/Random.o out/Main.o out/extensions/Food.o
+OBJECTS := out/Random.o out/Main.o out/Food.o out/Game.o
 
 OUTPUT := tigame
 

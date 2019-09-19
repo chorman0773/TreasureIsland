@@ -12,6 +12,8 @@
 extern"C"{
 #endif
 
+#include <tigame/ComTypes.h>
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -114,8 +116,8 @@ struct GameCalls{
 	void(*addTileGenerateCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Map*,Position));
 	void(*addTilePlaceItemCallback)(Game*,Tile*,ActionResult(*)(Game*,Map*,Position,ItemStack*));
 	void(*addTileTickCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position));
-	const TileProperties* getProperties(Game*,const Tile*);
-	const Tile* getTile(Game*,const char*);
+	const TileProperties* (*getProperties)(Game*,const Tile*);
+	const Tile* (*getTile)(Game*,const char*);
 	Item* (*newItem)(Game*,const char*,ItemProperties);
 	void (*addItemUseCallback)(Game*,Item*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,ItemStack*));
 	void (*addItemCollectCallback)(Game*,Item*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,ItemStack*));
@@ -131,8 +133,8 @@ struct GameCalls{
 	void* reserved12;
 	void* reserved13;
 	void* reserved14;
-	const Tile* getTileAt(Game*,Map*,Position);
-	void* getTileDataAt(Game*,Map*,Position);
+	const Tile* (*getTileAt)(Game*,Map*,Position);
+	void* (*getTileDataAt)(Game*,Map*,Position);
 
 };
 

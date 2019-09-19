@@ -23,7 +23,7 @@ static void* allocFoodItemStructure(Game* game){
 }
 
 static void freeFoodItemStructure(Game* game,void* data){
-	return (*game)->free(game,data);
+	(*game)->free(game,data);
 }
 
 static const ItemProperties FoodItemProperties = {
@@ -42,14 +42,18 @@ static void free_list(Game* game,FoodList* list){
 }
 
 static void cleanup(Game* game,Extension* ext){
+	free_list(game,_food_list_begin.next);
+}
 
+static const char* food_name(Game* game,Random* rand,ItemStack* stack){
+	return "";
 }
 
 void Food_ExtensionMain(Game* game, Extension* ext){
 	(*game)->setExtensionName(game,ext,"tigame_food_items");
 	(*game)->setExtensionVersion(game,ext,0);
-	(*game)->setExtensionCleanupFn(game,cleanup);
+	(*game)->setExtensionCleanupFn(game,ext,cleanup);
 	Item* foodItem = (*game)->newItem(game,"food_item",FoodItemProperties);
-
+	(*game)->addItemNameCallback(game,foodItem,food_name);
 }
 
