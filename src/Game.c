@@ -31,11 +31,20 @@ struct ExtensionList{
 };
 struct GameData{
 	tigame_version version;
-
+	ExtensionList* extensions;
 
 
 	debug(int floating_allocations);
 };
+
+static void freeExtensions(ExtensionList* list,Game* game){
+	if(list!=NULL){
+		list->extension->cleanup_fn(game,list->extension);
+		 (*game)->free(game,list->extension);
+		 freeExtensions(list->next,game);
+		 (*game)->free(game,list);
+	}
+}
 
 static struct GameData* getGameData(Game* game){
 	return (struct GameData*)(game+1);
@@ -66,8 +75,10 @@ Game* tigame_Game_allocateCOMStructure(){
 	return structure;
 }
 
-void tigame_Game_cleanup(){
-
+void tigame_Game_cleanup(Game* game){
+	struct GameData* data = getGameData(game);
+	freeExtensions(data->extensions,game);
+	free(game);
 }
 
 

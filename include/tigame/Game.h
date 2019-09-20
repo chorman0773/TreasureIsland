@@ -75,6 +75,7 @@ typedef struct ItemProperties{
 	void*(*allocDataFn)(Game*);
 	void(*freeDataFn)(Game*,void*);
 	int16_t generateWeight;
+	int8_t maxStackSize;
 } ItemProperties;
 
 typedef struct FoodProperties{
@@ -103,19 +104,19 @@ struct GameCalls{
 	ExtensionList* (*getExtensions)(Game*);
 	ExtensionList* (*nextExtension)(Game*,ExtensionList*);
 	const Extension* (*getExtensionAt)(Game*,ExtensionList*);
+	tigame_version (*getVersion)(Game*);
 	void* reserved5; //Reserved for future versions.
 	void* reserved6; //This may be non-NULL.
 	void* reserved7;
 	void* reserved8;
-	void* reserved9;
-	void* reserved10;
-	tigame_version (*getVersion)(Game*);
 	Tile* (*newTile)(Game*,const char*,TileProperties);
 	void(*addTileEnterCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,Direction));
 	void(*addTileLeaveCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,Direction));
 	void(*addTileGenerateCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Map*,Position));
 	void(*addTilePlaceItemCallback)(Game*,Tile*,ActionResult(*)(Game*,Map*,Position,ItemStack*));
 	void(*addTileTickCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position));
+	void(*addTileNameLineCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position));
+	void(*addTileDescriptionLineCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position));
 	const TileProperties* (*getProperties)(Game*,const Tile*);
 	const Tile* (*getTile)(Game*,const char*);
 	Item* (*newItem)(Game*,const char*,ItemProperties);
@@ -135,7 +136,13 @@ struct GameCalls{
 	void* reserved14;
 	const Tile* (*getTileAt)(Game*,Map*,Position);
 	void* (*getTileDataAt)(Game*,Map*,Position);
-
+	ItemStack* (*getItemAt)(Game*,Map*,Position);
+	void* reserved15;
+	const Item* (*getStackItem)(Game*,ItemStack*);
+	int(*getStackCount)(Game*,ItemStack*);
+	void*(*getStackData)(Game*,ItemStack*);
+	ItemStack* (*getItemStack)(Game*,Player*,uint8_t);
+	uint16_t (*getBagSize)(Game*,Player*);
 };
 
 
