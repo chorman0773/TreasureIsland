@@ -32,17 +32,17 @@ struct ExtensionList{
 struct GameData{
 	tigame_version version;
 	ExtensionList* extensions;
-
-
+	ExtensionList* extensionsTail;
 	debug(int floating_allocations);
 };
 
 static void freeExtensions(ExtensionList* list,Game* game){
 	if(list!=NULL){
-		list->extension->cleanup_fn(game,list->extension);
-		 (*game)->free(game,list->extension);
-		 freeExtensions(list->next,game);
-		 (*game)->free(game,list);
+		freeExtensions(list->next,game);
+		if(list->extension->cleanup_fn)
+			list->extension->cleanup_fn(game,list->extension);
+		(*game)->free(game,list->extension);
+		(*game)->free(game,list);
 	}
 }
 
@@ -69,9 +69,23 @@ struct GameCalls CALLS = {
 		tigame_free
 };
 
+
 Game* tigame_Game_allocateCOMStructure(){
 	Game* structure = malloc(sizeof(Game)+sizeof(struct GameData));
-
+	*structure = &CALLS;
+	struct GameData* data = (struct GameData*)(structure+1);
+	debug(data->floating_allocations = 0);
+	data->version = GAME_VERSION;
+	ExtensionList* list = tigame_alloc(structure,sizeof(ExtensionList));
+	data->extensions = list;
+	data->extensionsTail = list;
+	list->next = NULL;
+	Extension* comAPI = tigame_alloc(structure,sizeof(Extension));
+	comAPI->version = TIGAME_COM_ABI;
+	comAPI->name = "comapi";
+	comAPI->entryPoint = NULL;
+	comAPI->cleanup_fn = NULL;
+	list->extension = comAPI;
 	return structure;
 }
 
@@ -79,6 +93,22 @@ void tigame_Game_cleanup(Game* game){
 	struct GameData* data = getGameData(game);
 	freeExtensions(data->extensions,game);
 	free(game);
+}
+
+Extension* tigame_Game_loadExtension(Game* game,Extension_entryPoint* entry){
+	ExtensionList* list = getGameData(game)->extensionsTail;
+	list->next = tigame_alloc(game,sizeof(ExtensionList));
+	list = list->next;
+	getGameData(game)->extensionsTail = list;
+	list->next = NULL;
+	Extension* ext = tigame_alloc(game,sizeof(ExtensionList));
+	ext->entryPoint = entry;
+	ext->cleanup_fn = NULL;
+	ext->name = NULL;
+	ext->version = -1;
+	entry(game,ext);
+	list->extension = ext;
+	return list;
 }
 
 

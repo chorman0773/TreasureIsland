@@ -1,0 +1,12 @@
+#ifndef TIGAME_COMABI_CONFIG
+#define TIGAME_COMABI_CONFIG
+/*
+	This is an automatically generated file. 
+	Do not edit it.
+	Built with @configure_input@.
+	The Defined TIGAME_ABI_VERSION is @tigame_abi@
+*/
+
+#define TIGAME_COM_ABI @tigame_abi@
+
+#endif

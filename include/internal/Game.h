@@ -17,6 +17,8 @@ Game* tigame_Game_allocateCOMStructure();
 void tigame_Game_cleanup(Game*);
 void tigame_Game_tickEpilouge(Game*);
 
+Extension* tigame_Game_loadExtension(Game* game,Extension_entryPoint* entrypoint);
+
 #ifdef __cplusplus
 };
 #endif

@@ -1,0 +1,69 @@
+
+CDIALECT = c11
+
+INCLUDES += ./include
+LIBS += m
+DEFINES += TIGAME_COM_ABI=@tigame_abi@ PLATFORM_OS=@os@
+
+ALL_CFLAGS = $(CFLAGS) -pthread $(foreach include,$(INCLUDES),-I$(include)) $(foreach define,$(DEFINES),-D$(define)) -std=$(CDIALECT)
+
+ifeq (@build_type@,debug)
+	ALL_CLFAGS += -g
+else ifeq (@build_type@,debug-sanitize)
+	ALL_CLFAGS += -g -fsanitize=undefined -fstack-protector-strong
+else ifeq (@build_type@,release)
+	ALL_CFLAGS += -O3 -fstack-protector-strong
+	DEFINES += TIGAME_NO_DEBUG
+else
+	$(error Unknown Build tppe @build_type@. Acceptable values are debug, debug-sanitize, and release)
+endif
+
+ifeq ($(findstring linux,@os@),linux)
+	LIBS += dl
+	# Add libdl.so iff we are building on linux. 
+	# Win32 Provides the Dynamic Loader Functions to all programs.
+	# This can still be used on cygwin.
+endif
+
+ALL_LDFLAGS = $(LD_FLAGS) -pthread 
+
+OBJECTS := out/Random.o out/Main.o out/Food.o out/Game.o 
+
+OUTPUT := tigame@EXEEXT@
+
+all: $(OUTPUT)
+
+
+$(OUTPUT): $(OBJECTS)
+	$(CC) $(ALL_LDFLAGS) -o $@ $^ $(foreach library,$(LIBS),-l$(library))
+
+out/:
+	mkdir out/
+
+out/extload/: out/
+	mkdir out/extload/
+
+out/%.o: src/%.c | out/
+	$(CC) $(ALL_CFLAGS) -frandom-seed="$@" -o $@ -c $^
+
+out/extload/%.o: src/extload/@os@/%.c | out/extload/
+	$(CC) $(ALL_CFLAGS) -frandom-seed="$@" -o $@ -c $^
+
+install-headers:
+	install -dm755 @includedir@/tigame
+	install -m644 include/tigame/*.h @includedir@/tigame
+	
+install-game:
+	install $(OUTPUT) @exec_prefix@/bin
+
+clean:
+	rm -rf out/
+	rm -f $(OUTPUT)
+	
+rebuild: 
+	+make clean
+	+make all
+
+distclean: clean
+	rm -rf ./config.log ./config.status ./Makefile ./include/tigame/ComAbi.h
+	

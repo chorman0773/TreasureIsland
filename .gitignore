@@ -46,6 +46,12 @@
 *.mod*
 *.cmd
 .tmp_versions/
+
+# Autoconf Output Files
+Makefile
+config.status
+config.log
+include/tigame/ComAbi.h
 modules.order
 Module.symvers
 Mkfile.old

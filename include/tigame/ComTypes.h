@@ -12,6 +12,8 @@
 extern"C"{
 #endif
 
+#include <tigame/ComAbi.h>
+
 #include <stdint.h>
 
 typedef uint8_t tigame_bool;
