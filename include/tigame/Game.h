@@ -58,7 +58,8 @@ enum{
 typedef int32_t ActionResult;
 
 enum{
-	RESULT_ALLOw, RESULT_DENY
+	RESULT_ALLOw = 0, RESULT_DENY = 1,
+	RESULT_ERROR = 2
 };
 
 typedef struct TileProperties{
@@ -142,7 +143,24 @@ struct GameCalls{
 	int(*getStackCount)(Game*,ItemStack*);
 	void*(*getStackData)(Game*,ItemStack*);
 	ItemStack* (*getItemStack)(Game*,Player*,uint8_t);
-	uint16_t (*getBagSize)(Game*,Player*);
+	uint8_t (*getBagSize)(Game*,Player*);
+	ActionResult (*useItem)(Game*,Player*,ItemStack*);
+	ItemStack* (*mergeItems)(Game*,ItemStack*,ItemStack*);
+	ItemStack* (*createEmptyStack)(Game*);
+	Position (*getPlayerPosition)(Game*,Player*);
+	uint8_t (*getPlayerHealth)(Game*,Player*);
+	uint8_t (*getPlayerHydration)(Game*,Player*);
+	float (*getPlayerSaturation)(Game*,Player*);
+	ActionResult (*movePlayer)(Game*,Player*,Direction);
+	void(*setPlayerName)(Game*,Player*,const char*);
+	const char*(*getPlayerName)(Game*,Player*);
+	void (*damagePlayer)(Game*,Player*,uint8_t);
+	void (*healPlayer)(Game*,Player*,uint8_t);
+	void (*healSaturation)(Game*,Player*,float);
+	void (*healHydration)(Game*,Player*,uint8_t);
+	tigame_bool (*initGame)(Game*,Random*);
+	uint8_t (*getPlayLength)(Game*);
+	void (*tick)(Game*);
 };
 
 
