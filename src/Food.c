@@ -49,7 +49,7 @@ static const char* food_name(Game* game,Random* rand,ItemStack* stack){
 	return "";
 }
 
-void Food_ExtensionMain(Game* game, Extension* ext){
+void tigame_FoodItem_main(Game* game, Extension* ext){
 	(*game)->setExtensionName(game,ext,"tigame_food_items");
 	(*game)->setExtensionVersion(game,ext,0);
 	(*game)->setExtensionCleanupFn(game,ext,cleanup);

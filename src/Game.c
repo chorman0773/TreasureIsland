@@ -108,7 +108,7 @@ Extension* tigame_Game_loadExtension(Game* game,Extension_entryPoint* entry){
 	ext->version = -1;
 	entry(game,ext);
 	list->extension = ext;
-	return list;
+	return ext;
 }
 
 
