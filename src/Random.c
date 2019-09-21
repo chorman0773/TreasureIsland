@@ -5,12 +5,14 @@
  *      Author: chorm
  */
 
-#include <tigame/Random.h>
+#include <internal/Random.h>
 
 #include <stdlib.h>
 #include <stdatomic.h>
 #include <math.h>
 #include <time.h>
+
+#define min(a,b) ((a)<(b)?(a):(b))
 
 #ifdef TIGAME_MULTITHREAD_SUPPORT
 
@@ -81,11 +83,11 @@ static uint32_t Random_next(Random* rand,int bits){
 	return val;
 }
 
-int Random_nextInt(Random* rand){
+int32_t Random_nextInt(Random* rand){
 	return (int)(Random_next(rand,32));
 }
 
-int Random_nextIntb(Random* rand,unsigned bound){
+int32_t Random_nextIntb(Random* rand,int32_t bound){
 
    if ((bound & -bound) == bound)  // i.e., bound is a power of 2
 	 return (int)((bound * (uint64_t)Random_next(rand,31)) >> 31);
@@ -139,3 +141,11 @@ double Random_nextGaussian(Random* rand){
 	return val;
 }
 
+
+void Random_nextBytes(Random* rand,void* data,size_t sz){
+	uint8_t* bytes = (uint8_t*)data;
+	for (int i = 0; i < sz; )
+	     for (int rnd = Random_nextInt(rand), n = min(sz - i, 4);
+	          n-- > 0; rnd >>= 8)
+	       bytes[i++] = (uint8_t)rnd;
+}

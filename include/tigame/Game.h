@@ -90,6 +90,17 @@ typedef struct FoodProperties{
 
 typedef struct ExtensionList ExtensionList;
 
+typedef struct RandomCalls{
+	tigame_bool(*nextBoolean)(Random*);
+	int32_t(*nextInt)(Random*);
+	int32_t(*nextIntb)(Random*,int32_t);
+	float(*nextFloat)(Random*);
+	double(*nextDouble)(Random*);
+	int64_t(*nextLong)(Random*);
+	double(*nextGaussian)(Random*);
+	void(*nextBytes)(Random*,void*,size_t);
+} RandomCalls;
+
 struct GameCalls{
 	void* reserved1; //Reserved for COM Compatibility
 	void* reserved2; //Set to NULL
@@ -97,19 +108,23 @@ struct GameCalls{
 	void* reserved4;
 	void* (*alloc)(Game*,size_t);
 	void  (*free)(Game*,void*);
+	void (__attribute__((format(printf,2,3)))*printf)(Game*,const char*,...);
+	const RandomCalls* (*getRandomCalls)(Game*);
 	void (*setExtensionName)(Game*,Extension*,const char*);
 	void (*setExtensionVersion)(Game*,Extension*,tigame_version);
 	void (*setExtensionCleanupFn)(Game*,Extension*,void(*)(Game*,Extension*));
-	const Extension* (*getExtension)(const char*);
 	ExtensionList* (*extensionsEnd)(Game*);
 	ExtensionList* (*getExtensions)(Game*);
 	ExtensionList* (*nextExtension)(Game*,ExtensionList*);
 	const Extension* (*getExtensionAt)(Game*,ExtensionList*);
+	const Extension* (*getExtension)(Game*,const char*);
 	tigame_version (*getVersion)(Game*);
-	void* reserved5; //Reserved for future versions.
-	void* reserved6; //This may be non-NULL.
+	Extension* (*loadExtension)(Game*,Extension_entryPoint*);
+	void* reserved5; //Reserved for future versions. This may be non-NULL.
+	void* reserved6;
 	void* reserved7;
 	void* reserved8;
+	void* reserved9;
 	Tile* (*newTile)(Game*,const char*,TileProperties);
 	void(*addTileEnterCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,Direction));
 	void(*addTileLeaveCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,Direction));

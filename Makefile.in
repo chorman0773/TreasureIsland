@@ -10,27 +10,27 @@ DEFINES += TIGAME_COM_ABI=@tigame_abi@ PLATFORM_OS=@os@
 ALL_CFLAGS = @CFLAGS@ -pthread $(foreach include,$(INCLUDES),-I$(include)) $(foreach define,$(DEFINES),-D$(define)) -std=$(CDIALECT)
 
 ifeq (@build_type@,debug)
-	ALL_CLFAGS += -g
+ALL_CLFAGS += -g
 else ifeq (@build_type@,debug-sanitize)
-	ALL_CLFAGS += -g -fsanitize=undefined -fstack-protector-strong
+ALL_CLFAGS += -g -fsanitize=undefined -fstack-protector-strong
 else ifeq (@build_type@,release)
-	ALL_CFLAGS += -O3 -fstack-protector-strong
-	DEFINES += TIGAME_NO_DEBUG
+ALL_CFLAGS += -O3 -fstack-protector-strong
+DEFINES += TIGAME_NO_DEBUG
 else
-	$(error Unknown Build tppe @build_type@. Acceptable values are debug, debug-sanitize, and release)
+$(error Unknown Build type @build_type@. Acceptable values are debug, debug-sanitize, and release)
 endif
 
 ALL_LDFLAGS = $(LD_FLAGS) -pthread 
 
 ifeq ($(findstring linux,@os@),linux)
-	LIBS += dl
-	OS := linux
-	
-	# Add libdl.so iff we are building on linux. 
-	# Win32 Provides the Dynamic Loader Functions to all programs.
-	# This can still be used on cygwin.
+LIBS += dl
+OS := linux
+
+# Add libdl.so iff we are building on linux. 
+# Win32 Provides the Dynamic Loader Functions to all programs.
+# This can still be used on cygwin.
 else
-	OS := windows
+OS := windows
 endif
 
 

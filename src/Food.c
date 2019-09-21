@@ -55,5 +55,6 @@ void tigame_FoodItem_main(Game* game, Extension* ext){
 	(*game)->setExtensionCleanupFn(game,ext,cleanup);
 	Item* foodItem = (*game)->newItem(game,"food_item",FoodItemProperties);
 	(*game)->addItemNameCallback(game,foodItem,food_name);
+	(*game)->printf(game,"Initialized Food Items Built-in with version %hd",0);
 }
 
