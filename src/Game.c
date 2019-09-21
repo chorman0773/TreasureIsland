@@ -16,8 +16,8 @@
 #define GAME_VERSION 0x0000
 
 #include <internal/Random.h>
-#include <internal/Map.h>
-#include <internal/LinkedList.h>
+#include <tigame/Map.h>
+#include <tigame/LinkedList.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
