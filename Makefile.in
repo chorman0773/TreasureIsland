@@ -35,7 +35,7 @@ endif
 
 
 
-OBJECTS := out/Random.o out/Main.o out/Food.o out/Game.o 
+OBJECTS := out/Random.o out/Main.o out/Food.o out/Game.o out/ColoredWrite.o
 
 OUTPUT := tigame@EXEEXT@
 

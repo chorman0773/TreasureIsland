@@ -69,6 +69,7 @@ typedef struct TileProperties{
 	void*(*allocDataFn)(Game*);
 	void(*freeDataFn)(Game*,void*);
 	int16_t generateWeight;
+	int32_t tileColor;
 } TileProperties;
 
 typedef struct ItemProperties{
