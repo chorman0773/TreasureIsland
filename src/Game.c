@@ -40,7 +40,7 @@ struct GameData{
 	ExtensionList* extensionsTail;
 	TreeMap* tiles;
 	TreeMap* items;
-	debug(int floating_allocations);
+	debug(int floating_allocations;)
 };
 
 
