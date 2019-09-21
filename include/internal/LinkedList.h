@@ -20,7 +20,7 @@ typedef struct LinkedList{
 	struct LinkedList* next;
 } LinkedList;
 
-inline void freeList(LinkedList* list,Game* game){
+static inline void freeList(LinkedList* list,Game* game){
 	if(list){
 		freeList(list->next,game);
 		(*game)->free(game,list->data);
@@ -28,18 +28,18 @@ inline void freeList(LinkedList* list,Game* game){
 	}
 }
 
-inline void listInsert(LinkedList* list,void* data,Game* game){
+static inline void listInsert(LinkedList* list,void* data,Game* game){
 	LinkedList* next = (LinkedList*)((*game)->alloc(game,sizeof(LinkedList)));
 	next->next = list->next;
 	list->next = next;
 	next->data = data;
 }
 
-inline LinkedList* listNext(LinkedList* list){
+static inline LinkedList* listNext(LinkedList* list){
 	return list->next;
 }
 
-void* listDereference(LinkedList* list){
+static inline void* listDereference(LinkedList* list){
 	return list->data;
 }
 

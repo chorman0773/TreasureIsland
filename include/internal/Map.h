@@ -28,7 +28,7 @@ typedef struct TreeMap{
 	Node* root;
 } TreeMap;
 
-inline void map_put(TreeMap* map,const void* key,void* value,Game* game){
+static inline void map_put(TreeMap* map,const void* key,void* value,Game* game){
 	Node* node = map->root;
 	while(node){
 		if(map->key_cmp_fn(key,node->key))
@@ -47,7 +47,7 @@ inline void map_put(TreeMap* map,const void* key,void* value,Game* game){
 	node->right = NULL;
 }
 
-inline void* map_get(TreeMap* map,const void* key){
+static inline void* map_get(TreeMap* map,const void* key){
 	Node* node = map->root;
 	while(node){
 		if(map->key_cmp_fn(key,node->key))
@@ -60,7 +60,7 @@ inline void* map_get(TreeMap* map,const void* key){
 	return NULL;
 }
 
-inline TreeMap* map_new(Game* game,tigame_bool(*cmpFn)(const void*,const void*),void(*value_dtor)(Game*,void*)){
+static inline TreeMap* map_new(Game* game,tigame_bool(*cmpFn)(const void*,const void*),void(*value_dtor)(Game*,void*)){
 	TreeMap* map = (TreeMap*)(*game)->alloc(game,sizeof(TreeMap));
 	map->root = NULL;
 	map->key_cmp_fn = cmpFn;
@@ -68,7 +68,7 @@ inline TreeMap* map_new(Game* game,tigame_bool(*cmpFn)(const void*,const void*),
 	return map;
 }
 
-inline void node_free(Node* node,Game* game,TreeMap* map){
+static inline void node_free(Node* node,Game* game,TreeMap* map){
 	if(node){
 		node_free(node->left,game,map);
 		node_free(node->right,game,map);
@@ -77,7 +77,7 @@ inline void node_free(Node* node,Game* game,TreeMap* map){
 	}
 }
 
-inline void map_free(Game* game,TreeMap* map){
+static inline void map_free(Game* game,TreeMap* map){
 	node_free(map->root,game,map);
 	(*game)->free(game,map);
 }
