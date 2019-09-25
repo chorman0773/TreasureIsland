@@ -18,6 +18,10 @@ typedef struct FoodList{
 	struct FoodList* next;
 } FoodList;
 
+struct Food{
+	FoodProperties properties;
+};
+
 static void* allocFoodItemStructure(Game* game){
 	return (*game)->alloc(game,sizeof(FoodData));
 }
