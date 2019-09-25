@@ -43,6 +43,25 @@ struct GameData{
 	debug(int floating_allocations;)
 };
 
+struct ItemStack{
+	Item* item;
+	uint8_t count;
+	void* data;
+};
+
+struct Player{
+	uint8_t health;
+	uint8_t hydration;
+	Position location;
+	uint8_t bagSize;
+	ItemStack* items[40];
+};
+
+struct Tile{
+	const char* name;
+	TileProperties properties;
+	ActionResult(*tickCallback)(Game*,Random*,Player*,Map*,Position);
+};
 
 
 static void freeExtensions(ExtensionList* list,Game* game){
@@ -148,6 +167,14 @@ static const RandomCalls* getRandomCalls(Game* g){
 			Random_nextBytes
 	};
 	return &RAND_CALLS;
+}
+
+static Tile* newTiles(Game* game,const char* name,TileProperties properties){
+	Tile* tile = (Tile*)((*game)->alloc(sizeof(Tile)));
+	tile->name = name;
+	tile->properties = properties;
+	map_put(getGameData(game)->tiles,name,tile,game);
+	return tile;
 }
 
 static struct GameCalls CALLS = {
