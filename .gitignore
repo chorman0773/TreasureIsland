@@ -53,6 +53,7 @@ config.status
 config.log
 include/tigame/ComAbi.h
 tigame
+build/
 modules.order
 Module.symvers
 Mkfile.old
