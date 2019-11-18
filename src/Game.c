@@ -15,7 +15,7 @@
 
 #define GAME_VERSION 0x0000
 
-#include <internal/Random.h>
+#include <Random.h>
 #include <tigame/Map.h>
 #include <tigame/LinkedList.h>
 #include <stdlib.h>
@@ -108,6 +108,7 @@ static void setExtensionCleanupFunction(Game* game,Extension* ext,void(*cleanupf
 }
 
 Extension* tigame_Game_loadExtension(Game* game,Extension_entryPoint* entry){
+	(*game)->printf(game,"Loading extension with entrypoint %p\n",(void*)entry);
 	ExtensionList* list = getGameData(game)->extensionsTail;
 	list->next = tigame_alloc(game,sizeof(ExtensionList));
 	list = list->next;
@@ -170,7 +171,7 @@ static const RandomCalls* getRandomCalls(Game* g){
 }
 
 static Tile* newTiles(Game* game,const char* name,TileProperties properties){
-	Tile* tile = (Tile*)((*game)->alloc(sizeof(Tile)));
+	Tile* tile = (Tile*)((*game)->alloc(game,sizeof(Tile)));
 	tile->name = name;
 	tile->properties = properties;
 	map_put(getGameData(game)->tiles,name,tile,game);

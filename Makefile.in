@@ -1,13 +1,13 @@
 
-
-
+CC = @CC@
+INSTALL = @INSTALL@
 CDIALECT = c11
 
-INCLUDES += ./include
+INCLUDES += @srcdir@/include @srcdir@/random/include @srcdir@/libconinteract/include @builddir@/include
 LIBS += m
 DEFINES += TIGAME_COM_ABI=@tigame_abi@ PLATFORM_OS=@os@
 
-ALL_CFLAGS = @CFLAGS@ -pthread $(foreach include,$(INCLUDES),-I$(include)) $(foreach define,$(DEFINES),-D$(define)) -std=$(CDIALECT)
+LIBRARIES = random/librandom.a libconinteract/libconinteract.a
 
 ifeq (@build_type@,debug)
 ALL_CLFAGS += -g
@@ -20,58 +20,99 @@ else
 $(error Unknown Build type @build_type@. Acceptable values are debug, debug-sanitize, and release)
 endif
 
-ALL_LDFLAGS = $(LD_FLAGS) -pthread 
+ifeq (@builddir@,@srcdir@)
+BUILDDIRS =
+else
+BUILDDIRS = @builddir@/*
+endif
+
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+
+ALL_CFLAGS = @CPPFLAGS@ @CFLAGS@ -pthread $(foreach include,$(INCLUDES),-I$(include)) $(foreach define,$(DEFINES),-D$(define)) -std=$(CDIALECT)
+
+ALL_LDFLAGS = @LDFLAGS@ -pthread 
 
 ifeq ($(findstring linux,@os@),linux)
 LIBS += dl
-OS := linux
-
+OS = linux
+DLLEXT = .so
 # Add libdl.so iff we are building on linux. 
 # Win32 Provides the Dynamic Loader Functions to all programs.
 # This can still be used on cygwin.
 else
 OS := windows
+DLLEXT = .dll
 endif
 
+OUTDIR = @builddir@/out
+EXTDIR = @builddir@/extensions
+SRCDIR = @srcdir@/src
+
+OBJECTS := $(OUTDIR)/Main.o $(OUTDIR)/Food.o $(OUTDIR)/Game.o $(OUTDIR)/ColoredWrite.o $(OUTDIR)/extload/ExtensionLoader.o
 
 
-OBJECTS := out/Random.o out/Main.o out/Food.o out/Game.o out/ColoredWrite.o
+OUTPUT := @builddir@/tigame@EXEEXT@
 
-OUTPUT := tigame@EXEEXT@
+export OS CFLAGS CPPFLAGS LDFLAGS DLLEXT CC INCLUDES DEFINES CDIALECT
 
-all: $(OUTPUT)
+all: $(OUTPUT) extensions/all
 
 
-$(OUTPUT): $(OBJECTS)
+$(OUTPUT): $(OBJECTS) $(LIBRARIES)
 	$(CC) $(ALL_LDFLAGS) -o $@ $^ $(foreach library,$(LIBS),-l$(library))
 
-out/:
-	mkdir out/
+$(OUTDIR)/:
+	mkdir $(OUTDIR)/
 
-out/extload/: out/
-	mkdir out/extload/
+$(OUTDIR)/extload/:
+	mkdir -p $(OUTDIR)/extload/
 
-out/%.o: src/%.c | out/
+$(OUTDIR)/%.o: $(SRCDIR)/%.c | $(OUTDIR)/
 	$(CC) $(ALL_CFLAGS) -frandom-seed="$@" -o $@ -c $^
 
-out/extload/%.o: src/extload/$(OS)/%.c | out/extload/
+$(OUTDIR)/extload/%.o: $(SRCDIR)/extload/$(OS)/%.c | $(OUTDIR)/extload/
 	$(CC) $(ALL_CFLAGS) -frandom-seed="$@" -o $@ -c $^
 
 install-headers:
-	install -dm755 @includedir@/tigame
-	install -m644 include/tigame/*.h @includedir@/tigame
+	$(INSTALL) -dm755 @includedir@/tigame
+	$(INSTALL) -m644 @srcdir@/include/tigame/*.h @includedir@/tigame
+	$(INSTALL) -m644 @builddir@/include/tigame/*.h @includedir@/tigame
 	
 install-game:
-	install -m755 $(OUTPUT) @bindir@
+	$(INSTALL) -m755 $(OUTPUT) @bindir@
 
 clean:
 	rm -rf out/
 	rm -f $(OUTPUT)
+	+$(MAKE) random/clean
+	+$(MAKE) libconinteract/clean
+	+$(MAKE) extensions/clean
 	
 rebuild: 
-	+make clean
-	+make all
+	+$(MAKE) clean
+	+$(MAKE) all
 
 distclean: clean
-	rm -rf ./config.log ./config.status ./Makefile ./include/tigame/ComAbi.h
+	rm -rf @builddir@/config.log @builddir@/config.status @builddir@/Makefile @builddir@/include/tigame/ComAbi.h $(BUILDDIRS)
 	
+random/%: random/
+	+$(MAKE) -C random $*
+
+libconinteract/%: libconinteract/
+	+$(MAKE) -C libconinteract $*
+
+extensions/%: extensions/
+	+$(MAKE) -C extensions $*
+
+random/:
+	cp -r @srcdir@/random/ @builddir@
+
+libconinteract/:
+	cp -r @srcdir@/libconinteract/ @builddir@
+
+extensions/:
+	cp -r @srcdir@/extensions/ @builddir@
+
+

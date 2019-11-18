@@ -16,9 +16,6 @@ extern"C"{
 
 void tigame_ExtLoad_main(Game* game,Extension* ext);
 void tigame_FoodItem_main(Game* game,Extension* ext);
-void tigame_Tiles_main(Game* game,Extension* ext);
-void tigame_Items_main(Game* game,Extension* ext);
-void tigame_Foods_main(Game* game,Extension* ext);
 
 #ifdef __cplusplus
 };

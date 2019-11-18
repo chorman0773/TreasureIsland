@@ -3,7 +3,7 @@ AC_INIT([tigame], [1.0], [])
 AC_CANONICAL_TARGET
 
 AC_PROG_CC
-
+AC_PROG_INSTALL
 
 AC_ARG_WITH([build-type],[--with-build-type=<build type>. Allows you to configure the type of build. Defaults to release. Acceptable values are debug, debug-sanitize, and release],
 	[
@@ -28,7 +28,8 @@ os=${target_os}
 AC_SUBST([os])
 
 
-
 AC_CONFIG_FILES([Makefile include/tigame/ComAbi.h])
+
+
 
 AC_OUTPUT
