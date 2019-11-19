@@ -584,6 +584,7 @@ PACKAGE_URL=''
 ac_subst_vars='LTLIBOBJS
 LIB@&t@OBJS
 os
+extensions
 tigame_abi
 build_type
 INSTALL_DATA
@@ -652,6 +653,7 @@ ac_user_opts='
 enable_option_checking
 with_build_type
 with_com_abi
+enable_extensions
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1281,6 +1283,12 @@ if test -n "$ac_init_help"; then
      short | recursive ) echo "Configuration of tigame 1.0:";;
    esac
   cat <<\_ACEOF
+
+Optional Features:
+  --disable-option-checking  ignore unrecognized --enable/--with options
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+--enable-extensions=<extensions...> builds each of the comma separated extensions as part of this process. This will not affect builtins (such as the Food Items builtin or Extension Loader), but will affect standard extensions
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2880,12 +2888,24 @@ fi
 
 
 
+@%:@ Check whether --enable-extensions was given.
+if test "${enable_extensions+set}" = set; then :
+  enableval=$enable_extensions; 
+	extensions=$enableval
+
+else
+  
+	extensions=test
+
+fi
+
+
 
 os=${target_os}
 
 
 
-ac_config_files="$ac_config_files Makefile include/tigame/ComAbi.h"
+ac_config_files="$ac_config_files Makefile extensions/Makefile include/tigame/ComAbi.h"
 
 
 
@@ -3597,6 +3617,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "extensions/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/Makefile" ;;
     "include/tigame/ComAbi.h") CONFIG_FILES="$CONFIG_FILES include/tigame/ComAbi.h" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;

@@ -23,12 +23,20 @@ AC_ARG_WITH([com-abi],[--with-com-abi=<number>. Allows you to set the TIGAME COM
 ])
 AC_SUBST([tigame_abi])
 
+AC_ARG_ENABLE([extensions],[--enable-extensions=<extensions...> builds each of the comma separated extensions as part of this process. This will not affect builtins (such as the Food Items builtin or Extension Loader), but will affect standard extensions],
+[
+	extensions=$enableval
+],
+[
+	extensions=test
+])
+AC_SUBST([extensions])
 
 os=${target_os}
 AC_SUBST([os])
 
 
-AC_CONFIG_FILES([Makefile include/tigame/ComAbi.h])
+AC_CONFIG_FILES([Makefile extensions/Makefile include/tigame/ComAbi.h])
 
 
 

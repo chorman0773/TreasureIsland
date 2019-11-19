@@ -121,9 +121,9 @@ struct GameCalls{
 	const Extension* (*getExtension)(Game*,const char*);
 	tigame_version (*getVersion)(Game*);
 	Extension* (*loadExtension)(Game*,Extension_entryPoint*);
-	void* reserved5; //Reserved for future versions. This may be non-NULL.
-	void* reserved6;
-	void* reserved7;
+	void (*setExtensionDataStruct)(Game*,Extension*,void*);
+	void* (*getExtensionDataStruct)(Game*,Extension*);
+	void* reserved7;//Reserved for future versions. This may be non-NULL.
 	void* reserved8;
 	void* reserved9;
 	Tile* (*newTile)(Game*,const char*,TileProperties);

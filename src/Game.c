@@ -28,6 +28,7 @@ struct Extension{
 	const char* name;
 	void(*cleanup_fn)(Game*,Extension*);
 	void(*entryPoint)(Game*,Extension*);
+	void* data;
 };
 
 struct ExtensionList{
@@ -139,6 +140,13 @@ static const Extension* getExtensionAt(Game* game,ExtensionList* list){
 	return list->extension;
 }
 
+static void* getExtensionData(Game* game,Extension* ext){
+	return ext->data;
+}
+static void setExtensionData(Game* game,Extension* ext,void* data){
+	ext->data = data;
+}
+
 static const Extension* getExtension(Game* game,const char* name){
 	for(ExtensionList* list=getExtensions(game);list!=NULL;list=nextExtension(game,list)){
 		const Extension* ext = list->extension;
@@ -197,8 +205,8 @@ static struct GameCalls CALLS = {
 		getExtension,
 		getVersion,
 		tigame_Game_loadExtension,
-		NULL,
-		NULL,
+		setExtensionData,
+		getExtensionData,
 		NULL,
 		NULL,
 		NULL

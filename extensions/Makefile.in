@@ -1,0 +1,24 @@
+
+comma:= ,
+empty:=
+space:= $(empty) $(empty)
+
+EXTENSIONS = $(subst $(comma),$(space),@extensions@)
+
+ALL_CFLAGS = $(CPPFLAGS) $(CFLAGS) -pthread $(foreach include,$(INCLUDES),-I../$(include)) $(foreach define,$(DEFINES),-D$(define)) -std=$(CDIALECT)
+
+ALL_LDFLAGS = $(LDFLAGS) -pthread -fPIC -shared
+
+objfiles = $(wildcard @srcdir@/$(1)/*.c)
+
+.SECONDEXPANSION:
+
+all: $(foreach ext,$(EXTENSIONS),$(ext).so)
+
+
+%.so: $$(call objfiles,$$*)
+	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -fvisibility=default -o $@ $^
+
+clean:
+	rm -f $(foreach ext,$(EXTENSIONS),ext$(ext).so $(wildcard $(ext)/*.o)) 
+

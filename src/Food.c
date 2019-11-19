@@ -54,11 +54,11 @@ static const char* food_name(Game* game,Random* rand,ItemStack* stack){
 }
 
 void tigame_FoodItem_main(Game* game, Extension* ext){
+	(*game)->printf(game,"Initialized Food Items Built-in with version %hd",0);
 	(*game)->setExtensionName(game,ext,"tigame_food_items");
 	(*game)->setExtensionVersion(game,ext,0);
 	(*game)->setExtensionCleanupFn(game,ext,cleanup);
 	Item* foodItem = (*game)->newItem(game,"food_item",FoodItemProperties);
 	(*game)->addItemNameCallback(game,foodItem,food_name);
-	(*game)->printf(game,"Initialized Food Items Built-in with version %hd",0);
 }
 
