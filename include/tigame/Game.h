@@ -132,8 +132,8 @@ struct GameCalls{
 	void(*addTileGenerateCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Map*,Position));
 	void(*addTilePlaceItemCallback)(Game*,Tile*,ActionResult(*)(Game*,Map*,Position,ItemStack*));
 	void(*addTileTickCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position));
-	void(*addTileNameLineCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position));
-	void(*addTileDescriptionLineCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position));
+	void(*addTileNameLineCallback)(Game*,Tile*,const char*(*)(Game*,Random*,Player*,Map*,Position));
+	void(*addTileDescriptionLineCallback)(Game*,Tile*,const char*(*)(Game*,Random*,Player*,Map*,Position));
 	const TileProperties* (*getProperties)(Game*,const Tile*);
 	const Tile* (*getTile)(Game*,const char*);
 	Item* (*newItem)(Game*,const char*,ItemProperties);
@@ -141,12 +141,12 @@ struct GameCalls{
 	void (*addItemCollectCallback)(Game*,Item*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,ItemStack*));
 	void (*addItemNameCallback)(Game*,Item*,const char*(*)(Game*,Random*,ItemStack*));
 	void (*addItemTickCallback)(Game*,Item*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,ItemStack*));
-	void (*addItemGenerateCallback)(Game*,Item,ActionResult(*)(Game*,Random*,Player*,Map*,Position,ItemStack*));
+	void (*addItemGenerateCallback)(Game*,Item*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,ItemStack*));
 	const ItemProperties* (*getItemProperties)(Game*,const Item*);
 	const Item* (*getItem)(Game*,const char*);
 	Food* (*newFood)(Game*,const char*,FoodProperties);
 	const FoodProperties* (*getFoodProperties)(Game*,const Food*);
-	const Food* (*getFood)(const char*);
+	const Food* (*getFood)(Game*,const char*);
 	void* reserved11;
 	void* reserved12;
 	void* reserved13;

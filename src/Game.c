@@ -6,6 +6,7 @@
  */
 
 #include <tigame/Game.h>
+#include <internal/Game.h>
 
 #ifndef TIGAME_NO_DEBUG
 #define debug(expn) expn
@@ -39,8 +40,12 @@ struct GameData{
 	tigame_version version;
 	ExtensionList* extensions;
 	ExtensionList* extensionsTail;
-	TreeMap* tiles;
-	TreeMap* items;
+	Extension* tileDispatcher;
+	const struct TileDispatcherCalls* tileCalls;
+	Extension* itemDispatcher;
+	const struct ItemDispatcherCalls* itemCalls;
+	Extension* foodDispatcher;
+	const struct FoodDispatcherCalls* foodCalls;
 	debug(int floating_allocations;)
 };
 
@@ -58,13 +63,6 @@ struct Player{
 	ItemStack* items[40];
 };
 
-struct Tile{
-	const char* name;
-	TileProperties properties;
-	ActionResult(*tickCallback)(Game*,Random*,Player*,Map*,Position);
-};
-
-
 static void freeExtensions(ExtensionList* list,Game* game){
 	if(list!=NULL){
 		freeExtensions(list->next,game);
@@ -78,6 +76,23 @@ static void freeExtensions(ExtensionList* list,Game* game){
 static struct GameData* getGameData(Game* game){
 	return (struct GameData*)(game+1);
 }
+
+void tigame_Game_setTileDispatcher(Game* game,Extension* ext,const struct TileDispatcherCalls* calls){
+	struct GameData* data = getGameData(game);
+	data->tileDispatcher = ext;
+	data->tileCalls = calls;
+}
+void tigame_Game_setItemDispatcher(Game* game,Extension* ext,const struct ItemDispatcherCalls* calls){
+	struct GameData* data = getGameData(game);
+	data->itemDispatcher = ext;
+	data->itemCalls = calls;
+}
+void tigame_Game_setFoodDispatcher(Game* game,Extension* ext,const struct FoodDispatcherCalls* calls){
+	struct GameData* data = getGameData(game);
+	data->foodDispatcher = ext;
+	data->foodCalls = calls;
+}
+
 
 static void* tigame_alloc(Game* game,size_t sz){
 	debug(getGameData(game)->floating_allocations++);
@@ -179,37 +194,156 @@ static const RandomCalls* getRandomCalls(Game* g){
 }
 
 static Tile* newTiles(Game* game,const char* name,TileProperties properties){
-	Tile* tile = (Tile*)((*game)->alloc(game,sizeof(Tile)));
-	tile->name = name;
-	tile->properties = properties;
-	map_put(getGameData(game)->tiles,name,tile,game);
-	return tile;
+	struct GameData* data = getGameData(game);
+	return data->tileCalls->newTile(game,name,properties,data->tileDispatcher);
 }
 
+static void addTileEnterCallback(Game* game,Tile* tile,ActionResult(*callback)(Game*,Random*,Player*,Map*,Position,Direction)){
+	struct GameData* data = getGameData(game);
+	data->tileCalls->addTileEnterCallback(game,tile,callback,data->tileDispatcher);
+}
+
+static void addTileLeaveCallback(Game* game,Tile* tile,ActionResult(*callback)(Game*,Random*,Player*,Map*,Position,Direction)){
+	struct GameData* data = getGameData(game);
+	data->tileCalls->addTileLeaveCallback(game,tile,callback,data->tileDispatcher);
+}
+
+static void addTileGenerateCallback(Game* game,Tile* tile,ActionResult(*callback)(Game*,Random*,Map*,Position)){
+	struct GameData* data = getGameData(game);
+	data->tileCalls->addTileGenerateCallback(game,tile,callback,data->tileDispatcher);
+}
+
+static void addTilePlaceItemCallback(Game* game,Tile* tile,ActionResult(*callback)(Game*,Map*,Position,ItemStack*)){
+	struct GameData* data = getGameData(game);
+	data->tileCalls->addTilePlaceItemCallback(game,tile,callback,data->tileDispatcher);
+}
+static void addTileTickCallback(Game* game,Tile* tile,ActionResult(*callback)(Game*,Random*,Player*,Map*,Position)){
+	struct GameData* data = getGameData(game);
+	data->tileCalls->addTileTickCallback(game,tile,callback,data->tileDispatcher);
+}
+
+static void addTileNameLineCallback(Game* game,Tile* tile,const char*(*callback)(Game*,Random*,Player*,Map*,Position)){
+	struct GameData* data = getGameData(game);
+	data->tileCalls->addTileNameLineCallback(game,tile,callback,data->tileDispatcher);
+}
+static void addTileDescriptionLineCallback(Game* game,Tile* tile,const char*(*callback)(Game*,Random*,Player*,Map*,Position)){
+	struct GameData* data = getGameData(game);
+	data->tileCalls->addTileDescriptionLineCallback(game,tile,callback,data->tileDispatcher);
+}
+
+static const TileProperties* getProperties(Game* game,const Tile* tile){
+	struct GameData* data = getGameData(game);
+	return data->tileCalls->getProperties(game,tile,data->tileDispatcher);
+}
+
+static const Tile* getTile(Game* game,const char* name){
+	struct GameData* data = getGameData(game);
+	return data->tileCalls->getTile(game,name,data->tileDispatcher);
+}
+
+static Item* newItem(Game* game,const char* name,ItemProperties properties){
+	struct GameData* data = getGameData(game);
+	return data->itemCalls->newItem(game,name,properties,data->itemDispatcher);
+}
+
+static void addItemUseCallback(Game* game,Item* item,ActionResult(*callback)(Game*,Random*,Player*,Map*,Position,ItemStack*)){
+	struct GameData* data = getGameData(game);
+	data->itemCalls->addItemUseCallback(game,item,callback,data->itemDispatcher);
+}
+
+static void addItemCollectCallback(Game* game,Item* item,ActionResult(*callback)(Game*,Random*,Player*,Map*,Position,ItemStack*)){
+	struct GameData* data = getGameData(game);
+	data->itemCalls->addItemCollectCallback(game,item,callback,data->itemDispatcher);
+}
+
+static void addItemNameCallback(Game* game,Item* item,const char*(*callback)(Game*,Random*,ItemStack*)){
+	struct GameData* data = getGameData(game);
+	data->itemCalls->addItemNameCallback(game,item,callback,data->itemDispatcher);
+}
+
+static void addItemTickCallback(Game* game,Item* item,ActionResult(*callback)(Game*,Random*,Player*,Map*,Position,ItemStack*)){
+	struct GameData* data = getGameData(game);
+	data->itemCalls->addItemTickCallback(game,item,callback,data->itemDispatcher);
+}
+
+static void addItemGenerateCallback(Game* game,Item* item,ActionResult(*callback)(Game*,Random*,Player*,Map*,Position,ItemStack*)){
+	struct GameData* data = getGameData(game);
+	data->itemCalls->addItemGenerateCallback(game,item,callback,data->itemDispatcher);
+}
+
+static const ItemProperties* getItemProperties(Game* game,const Item* item){
+	struct GameData* data = getGameData(game);
+	return data->itemCalls->getItemProperties(game,item,data->itemDispatcher);
+}
+
+static const Item* getItem(Game* game,const char* name){
+	struct GameData* data = getGameData(game);
+	return data->itemCalls->getItem(game,name,data->itemDispatcher);
+}
+
+static Food* newFood(Game* game,const char* name,FoodProperties properties){
+	struct GameData* data = getGameData(game);
+	return data->foodCalls->newFood(game,name,properties,data->foodDispatcher);
+}
+
+static const FoodProperties* getFoodProperties(Game* game,const Food* food){
+	struct GameData* data = getGameData(game);
+	return data->foodCalls->getFoodProperties(game,food,data->foodDispatcher);
+}
+
+static const Food* getFood(Game* game,const char* name){
+	struct GameData* data = getGameData(game);
+	return data->foodCalls->getFood(game,name,data->foodDispatcher);
+}
+
+/*
+Food* (*newFood)(Game*,const char*,FoodProperties);
+const FoodProperties* (*getFoodProperties)(Game*,const Food*);
+const Food* (*getFood)(Game*,const char*);
+*/
+
 static struct GameCalls CALLS = {
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		tigame_alloc,
-		tigame_free,
-		tigame_printf,
-		getRandomCalls,
-		setExtensionName,
-		setExtensionVersion,
-		setExtensionCleanupFunction,
-		extensionsEnd,
-		getExtensions,
-		nextExtension,
-		getExtensionAt,
-		getExtension,
-		getVersion,
-		tigame_Game_loadExtension,
-		setExtensionData,
-		getExtensionData,
-		NULL,
-		NULL,
-		NULL
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	tigame_alloc,
+	tigame_free,
+	tigame_printf,
+	getRandomCalls,
+	setExtensionName,
+	setExtensionVersion,
+	setExtensionCleanupFunction,
+	extensionsEnd,
+	getExtensions,
+	nextExtension,
+	getExtensionAt,
+	getExtension,
+	getVersion,
+	tigame_Game_loadExtension,
+	setExtensionData,
+	getExtensionData,
+	NULL,
+	NULL,
+	NULL,
+	newTiles,
+	addTileEnterCallback,
+	addTileLeaveCallback,
+	addTileGenerateCallback,
+	addTilePlaceItemCallback,
+	addTileTickCallback,
+	addTileNameLineCallback,
+	addTileDescriptionLineCallback,
+	getProperties,
+	getTile,
+	newItem,
+	addItemUseCallback,
+	addItemCollectCallback,
+	addItemNameCallback,
+	addItemTickCallback,
+	addItemGenerateCallback,
+	getItemProperties,
+	getItem
 };
 
 static tigame_bool strless(const void* a,const void* b){
@@ -233,20 +367,17 @@ Game* tigame_Game_allocateCOMStructure(){
 	comAPI->entryPoint = NULL;
 	comAPI->cleanup_fn = NULL;
 	list->extension = comAPI;
-	data->items = map_new(structure,strless,(*structure)->free);
-	data->tiles = map_new(structure,strless,(*structure)->free);
 	return structure;
 }
 
 void tigame_Game_cleanup(Game* game){
 	struct GameData* data = getGameData(game);
 	freeExtensions(data->extensions,game);
-	map_free(game,data->items);
-	map_free(game,data->tiles);
 	debug(if(data->floating_allocations){
 		(*game)->printf(game,"Warning: after cleanup of tigame, there are %d outstanding allocations that have not been freed.\n",data->floating_allocations);
 		(*game)->printf(game,"These allocations may have leaked, or been freed through other means.\n");
 	})
+	(*game)->printf(game,"Goodbye\n");
 	free(game);
 }
 

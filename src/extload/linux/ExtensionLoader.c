@@ -36,6 +36,7 @@ static void free_extdllist(Game* game,struct ExtensionDlList* list){
 static void cleanup(Game* game,Extension* ext){
     struct ExtLoaderData* data = (struct ExtLoaderData*) ((*game)->getExtensionDataStruct(game,ext));
     free_extdllist(game,data->first);
+    (*game)->printf(game,"Closed ExtensionLoader builtin\n");
 }
 static void load_extension(const char* relpath,Game* game,struct ExtLoaderData* ext);
 static void find_extensions(Game* game,struct ExtLoaderData* ext);

@@ -134,14 +134,11 @@ static inline void map_put(TreeMap* map,const void* key,void* value,Game* game){
         Node* nnode = (Node*)((*game)->alloc(game,sizeof(Node)));
         nnode->key = key;
         nnode->value = value;
-        nnode->parent = node;
-        if(map->key_cmp_fn(key,node->key))
-            node->left = nnode;
-        else
-            node->right = nnode;
+        nnode->parent = NULL;
         nnode->left = NULL;
         nnode->right = NULL;
         nnode->color = BLACK;
+	map->root = nnode;
         return;
     }
     while(true){
