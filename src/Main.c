@@ -16,6 +16,7 @@ int main(){
     Game* game = tigame_Game_allocateCOMStructure();
     Random_seed(rand);
     (*game)->printf(game,"Treasure Island Game: Initialized with Version %hd\n",(*game)->getVersion(game));
+    (*game)->loadExtension(game,tigame_Tiles_main);
     (*game)->loadExtension(game,tigame_Items_main);
     (*game)->loadExtension(game,tigame_FoodItem_main);
     (*game)->loadExtension(game,tigame_ExtLoad_main);

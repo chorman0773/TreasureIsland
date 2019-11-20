@@ -50,7 +50,7 @@ OUTDIR = @builddir@/out
 EXTDIR = @builddir@/extensions
 SRCDIR = @srcdir@/src
 
-OBJECTS := $(OUTDIR)/Main.o $(OUTDIR)/Food.o $(OUTDIR)/Game.o $(OUTDIR)/ColoredWrite.o $(OUTDIR)/extload/ExtensionLoader.o $(OUTDIR)/Items.o
+OBJECTS := $(OUTDIR)/Main.o $(OUTDIR)/Food.o $(OUTDIR)/Game.o $(OUTDIR)/ColoredWrite.o $(OUTDIR)/extload/ExtensionLoader.o $(OUTDIR)/Items.o $(OUTDIR)/Tiles.o
 
 
 OUTPUT := @builddir@/tigame@EXEEXT@
