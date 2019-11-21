@@ -12,6 +12,7 @@
 #define debug(expn) expn
 #else
 #define debug(expn)
+#define NDEBUG
 #endif
 
 #define GAME_VERSION 0x0000
@@ -23,6 +24,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <assert.h>
 
 struct Extension{
 	tigame_version version;
@@ -63,6 +65,42 @@ struct Player{
 	ItemStack* items[40];
 };
 
+struct MapTile{
+	const Tile* tile;
+	void* data;
+	ItemStack* stack;
+};
+
+struct Map{
+	uint8_t length;
+	uint8_t width;
+	MapTile* tiles;
+};
+
+static struct GameData* getGameData(Game* game){
+	return (struct GameData*)(game+1);
+}
+
+Map* tigame_Game_genMap(Game* game,Random* rand,uint8_t length,uint8_t width){
+	struct GameData* data = getGameData(game);
+	Map* map = (*game)->alloc(game,sizeof(Map));
+	map->length = length;
+	map->width = width;
+	map->tiles = (*game)->alloc(game,sizeof(MapTile)*length*width);
+	for(uint8_t x = 0;x<length;x++)
+		for(uint8_t y = 0;y<width;y++){
+			Position pos = {x,y};
+			MapTile* tile = &map->tiles[y*length+x];
+			tile->tile = data->tileCalls->pickTile(game,rand,data->tileDispatcher);
+			const TileProperties* properties = data->tileCalls->getProperties(game,tile->tile,data->tileDispatcher);
+			if(properties->allocDataFn)
+				tile->data = properties->allocDataFn(game);
+			else
+				tile->data = NULL;
+			if(data->tileCalls->generateTile(game,rand,map,pos,game->tileDispatcher)!=RESULT_DENY)
+		}
+}
+
 static void freeExtensions(ExtensionList* list,Game* game){
 	if(list!=NULL){
 		freeExtensions(list->next,game);
@@ -73,9 +111,7 @@ static void freeExtensions(ExtensionList* list,Game* game){
 	}
 }
 
-static struct GameData* getGameData(Game* game){
-	return (struct GameData*)(game+1);
-}
+
 
 void tigame_Game_setTileDispatcher(Game* game,Extension* ext,const struct TileDispatcherCalls* calls){
 	struct GameData* data = getGameData(game);
@@ -135,6 +171,7 @@ Extension* tigame_Game_loadExtension(Game* game,Extension_entryPoint* entry){
 	ext->cleanup_fn = NULL;
 	ext->name = NULL;
 	ext->version = -1;
+	ext->data = NULL;
 	list->extension = ext;
 	entry(game,ext);
 	return ext;
@@ -381,7 +418,14 @@ void tigame_Game_cleanup(Game* game){
 	free(game);
 }
 
-
+void tigame_Game_printExtensionInfo(Game* game){
+	struct GameData* data = getGameData(game);
+	
+	for(ExtensionList* list = data->extensions;list;list = list->next){
+		Extension* ext = list->extension;
+		(*game)->printf(game,"Extension Loaded: %s at version %hd. (Entry point %p, Cleanup %p, Data %p)\n",ext->name,ext->version,(void*)ext->entryPoint,(void*)ext->cleanup_fn,ext->data);
+	}
+}
 
 
 

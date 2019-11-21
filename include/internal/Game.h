@@ -12,6 +12,7 @@
 extern"C"{
 #endif
 #include <tigame/Game.h>
+#include <stdint.h>
 
 
 
@@ -26,6 +27,9 @@ struct TileDispatcherCalls{
 	void(*addTileDescriptionLineCallback)(Game*,Tile*,const char*(*)(Game*,Random*,Player*,Map*,Position),Extension*);
 	const TileProperties* (*getProperties)(Game*,const Tile*,Extension*);
 	const Tile* (*getTile)(Game*,const char*,Extension*);
+	const Tile* (*pickTile)(Game*,Random*,Extension*);
+	ActionResult (*generateTile)(Game*,Random*,Map*,Position,Extension*);
+	ActionResult (*placeItemOn)(Game*,Random*,Map*,Position,Extension*);
 };
 
 struct ItemDispatcherCalls{
@@ -37,6 +41,8 @@ struct ItemDispatcherCalls{
 	void (*addItemGenerateCallback)(Game*,Item*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,ItemStack*),Extension*);
 	const ItemProperties* (*getItemProperties)(Game*,const Item*,Extension*);
 	const Item* (*getItem)(Game*,const char*,Extension*);
+	const Item* (*pickItem)(Game*,Random*,Extension*);
+	ActionResult (*generateItem)(Game*,Random*,ItemStack*,Extension*);
 };
 
 struct FoodDispatcherCalls{
@@ -55,7 +61,11 @@ void tigame_Game_setFoodDispatcher(Game* game,Extension* ext,const struct FoodDi
 
 Extension* tigame_Game_loadExtension(Game* game,Extension_entryPoint* entrypoint);
 
+void tigame_Game_printExtensionInfo(Game* game);
 
+
+Map* tigame_Game_genMap(Game* game,Random* rand,uint8_t len,uint8_t width);
+void tigame_Game_mapFree(Game* game,Map* map);
 
 #ifdef __cplusplus
 };

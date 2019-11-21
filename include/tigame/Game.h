@@ -31,7 +31,7 @@ typedef struct Extension Extension;
 
 
 typedef struct Position{
-	unsigned x,y;
+	uint8_t x,y;
 }Position;
 
 
