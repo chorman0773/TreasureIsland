@@ -23,6 +23,7 @@ int main(){
     (*game)->loadExtension(game,tigame_Items_main);
     (*game)->loadExtension(game,tigame_FoodItem_main);
     (*game)->loadExtension(game,tigame_ExtLoad_main);
+    waitInput();
     clearScreen();
     for(;;){
         switch(menu("Treasure Island Game",menu_items)){

@@ -19,7 +19,7 @@
 
 #include <Random.h>
 #include <tigame/Map.h>
-#include <tigame/LinkedList.h>
+#include <List.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -34,14 +34,10 @@ struct Extension{
 	void* data;
 };
 
-struct ExtensionList{
-	Extension* extension;
-	ExtensionList* next;
-};
+
 struct GameData{
 	tigame_version version;
-	ExtensionList* extensions;
-	ExtensionList* extensionsTail;
+	LinkedList* extensions;
 	Extension* tileDispatcher;
 	const struct TileDispatcherCalls* tileCalls;
 	Extension* itemDispatcher;
@@ -98,17 +94,10 @@ Map* tigame_Game_genMap(Game* game,Random* rand,uint8_t length,uint8_t width){
 			else
 				tile->data = NULL;
 		}
+
+	return map;
 }
 
-static void freeExtensions(ExtensionList* list,Game* game){
-	if(list!=NULL){
-		freeExtensions(list->next,game);
-		if(list->extension->cleanup_fn)
-			list->extension->cleanup_fn(game,list->extension);
-		(*game)->free(game,list->extension);
-		(*game)->free(game,list);
-	}
-}
 
 
 
@@ -160,18 +149,13 @@ static void setExtensionCleanupFunction(Game* game,Extension* ext,void(*cleanupf
 
 Extension* tigame_Game_loadExtension(Game* game,Extension_entryPoint* entry){
 	(*game)->printf(game,"Loading extension with entrypoint %p\n",(void*)entry);
-	ExtensionList* list = getGameData(game)->extensionsTail;
-	list->next = tigame_alloc(game,sizeof(ExtensionList));
-	list = list->next;
-	getGameData(game)->extensionsTail = list;
-	list->next = NULL;
-	Extension* ext = tigame_alloc(game,sizeof(ExtensionList));
+	Extension* ext = malloc(sizeof(Extension));
 	ext->entryPoint = entry;
 	ext->cleanup_fn = NULL;
 	ext->name = NULL;
 	ext->version = -1;
 	ext->data = NULL;
-	list->extension = ext;
+    LinkedList_pushBack(getGameData(game)->extensions,ext);
 	entry(game,ext);
 	return ext;
 }
@@ -181,14 +165,14 @@ static ExtensionList* extensionsEnd(Game* game){
 }
 
 static ExtensionList* getExtensions(Game* game){
-	return getGameData(game)->extensions;
+	return (ExtensionList*)LinkedList_begin(getGameData(game)->extensions);
 }
 
 static ExtensionList* nextExtension(Game* game,ExtensionList* list){
-	return list->next;
+	return (ExtensionList*)LinkedList_next((Iterator*)list);
 }
 static const Extension* getExtensionAt(Game* game,ExtensionList* list){
-	return list->extension;
+	return (Extension*)LinkedList_dereference((Iterator*)list);
 }
 
 static void* getExtensionData(Game* game,Extension* ext){
@@ -199,8 +183,8 @@ static void setExtensionData(Game* game,Extension* ext,void* data){
 }
 
 static const Extension* getExtension(Game* game,const char* name){
-	for(ExtensionList* list=getExtensions(game);list!=NULL;list=nextExtension(game,list)){
-		const Extension* ext = list->extension;
+	for(Iterator* list=(Iterator*)getExtensions(game);list!=NULL;list=LinkedList_next(list)){
+		const Extension* ext = LinkedList_dereference(list);
 		if(strcmp(ext->name,name)==0)
 			return ext;
 	}
@@ -393,22 +377,20 @@ Game* tigame_Game_allocateCOMStructure(){
 	struct GameData* data = (struct GameData*)(structure+1);
 	debug(data->floating_allocations = 0);
 	data->version = GAME_VERSION;
-	ExtensionList* list = tigame_alloc(structure,sizeof(ExtensionList));
-	data->extensions = list;
-	data->extensionsTail = list;
-	list->next = NULL;
+
+	data->extensions = LinkedList_new(free);;
 	Extension* comAPI = tigame_alloc(structure,sizeof(Extension));
 	comAPI->version = TIGAME_COM_ABI;
 	comAPI->name = "comapi";
 	comAPI->entryPoint = NULL;
 	comAPI->cleanup_fn = NULL;
-	list->extension = comAPI;
+	LinkedList_pushBack(data->extensions,comAPI);
 	return structure;
 }
 
 void tigame_Game_cleanup(Game* game){
 	struct GameData* data = getGameData(game);
-	freeExtensions(data->extensions,game);
+	LinkedList_free(data->extensions);
 	debug(if(data->floating_allocations){
 		(*game)->printf(game,"Warning: after cleanup of tigame, there are %d outstanding allocations that have not been freed.\n",data->floating_allocations);
 		(*game)->printf(game,"These allocations may have leaked, or been freed through other means.\n");
@@ -420,8 +402,8 @@ void tigame_Game_cleanup(Game* game){
 void tigame_Game_printExtensionInfo(Game* game){
 	struct GameData* data = getGameData(game);
 	
-	for(ExtensionList* list = data->extensions;list;list = list->next){
-		Extension* ext = list->extension;
+	for(Iterator* list = LinkedList_begin(data->extensions);list;list = LinkedList_next(list)){
+		Extension* ext = LinkedList_dereference(list);
 		(*game)->printf(game,"Extension Loaded: %s at version %hd. (Entry point %p, Cleanup %p, Data %p)\n",ext->name,ext->version,(void*)ext->entryPoint,(void*)ext->cleanup_fn,ext->data);
 	}
 }

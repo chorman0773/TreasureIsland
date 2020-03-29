@@ -56,7 +56,7 @@ static void find_extensions(Game* game,struct ExtLoaderData* ext){
     DIR* dir = opendir("./extensions");
     char name[14+NAME_MAX] = "./extensions/";
     struct dirent* ent;
-    while(ent = readdir(dir))
+    while((ent = readdir(dir)))
         if(strstr(ent->d_name,".so")){
             strcpy(name+13,ent->d_name);
             load_extension(name,game,ext);
