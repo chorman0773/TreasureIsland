@@ -74,7 +74,7 @@ struct MapTile{
 struct Map{
 	uint8_t length;
 	uint8_t width;
-	MapTile* tiles;
+	struct MapTile* tiles;
 };
 
 static struct GameData* getGameData(Game* game){
@@ -86,18 +86,17 @@ Map* tigame_Game_genMap(Game* game,Random* rand,uint8_t length,uint8_t width){
 	Map* map = (*game)->alloc(game,sizeof(Map));
 	map->length = length;
 	map->width = width;
-	map->tiles = (*game)->alloc(game,sizeof(MapTile)*length*width);
+	map->tiles = (*game)->alloc(game,sizeof(struct MapTile)*length*width);
 	for(uint8_t x = 0;x<length;x++)
 		for(uint8_t y = 0;y<width;y++){
 			Position pos = {x,y};
-			MapTile* tile = &map->tiles[y*length+x];
+			struct MapTile* tile = &map->tiles[y*length+x];
 			tile->tile = data->tileCalls->pickTile(game,rand,data->tileDispatcher);
 			const TileProperties* properties = data->tileCalls->getProperties(game,tile->tile,data->tileDispatcher);
 			if(properties->allocDataFn)
 				tile->data = properties->allocDataFn(game);
 			else
 				tile->data = NULL;
-			if(data->tileCalls->generateTile(game,rand,map,pos,game->tileDispatcher)!=RESULT_DENY)
 		}
 }
 
