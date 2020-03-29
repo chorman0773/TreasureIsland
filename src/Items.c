@@ -87,7 +87,7 @@ static void cleanup(Game* game,Extension* ext){
 
 void tigame_Items_main(Game* game,Extension* ext){
     (*game)->printf(game,"Initialized Items Dispatcher Builtin with version %hd\n",0);
-    (*game)->setExtensionName(game,ext,"items");
+    (*game)->setExtensionName(game,ext,"tigame_item_dispatcher");
     (*game)->setExtensionVersion(game,ext,0);
     (*game)->setExtensionCleanupFn(game,ext,cleanup);
     TreeMap* map = map_new(game,strless,(*game)->free);
