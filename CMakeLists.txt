@@ -49,7 +49,7 @@ target_link_libraries(TreasureIsland libconinteract random io collect shadenbt d
 
 install(TARGETS TreasureIsland DESTINATION .)
 install(DIRECTORY include/tigame DESTINATION include PATTERN "*.h" EXCLUDE PATTERN "*.in")
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}}/include/tigame DESTINATION include)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/tigame DESTINATION include)
 
 if(NOT WIN32)
     target_link_options(TreasureIsland PUBLIC "LINKER:-rpath='$ORIGIN/../lib'")
