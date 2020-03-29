@@ -13,7 +13,7 @@ else()
     set(extload_os linux)
 endif()
 
-if(NOT (${CMAKE_BUILD_TYPE} EQUAL "Debug"))
+if(NOT (CMAKE_BUILD_TYPE EQUAL "Debug"))
 add_definitions(-DTIGAME_NO_DEBUG)
 endif()
 
