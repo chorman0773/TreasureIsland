@@ -13,7 +13,7 @@ extern"C"{
 #endif
 #include <tigame/Game.h>
 #include <stdint.h>
-
+#include <setjmp.h>
 
 
 struct TileDispatcherCalls{
@@ -63,6 +63,7 @@ Extension* tigame_Game_loadExtension(Game* game,Extension_entryPoint* entrypoint
 
 void tigame_Game_printExtensionInfo(Game* game);
 
+void tigame_Game_setErrorLandingPad(Game* game,jmp_buf* buf,const char*volatile*  msgStore);
 
 Map* tigame_Game_genMap(Game* game,Random* rand,uint8_t len,uint8_t width);
 void tigame_Game_mapFree(Game* game,Map* map);

@@ -31,6 +31,7 @@ struct Extension{
 	const char* name;
 	void(*cleanup_fn)(Game*,Extension*);
 	void(*entryPoint)(Game*,Extension*);
+	void(*debugFn)(Game*,Extension*);
 	void* data;
 };
 
@@ -44,6 +45,9 @@ struct GameData{
 	const struct ItemDispatcherCalls* itemCalls;
 	Extension* foodDispatcher;
 	const struct FoodDispatcherCalls* foodCalls;
+	jmp_buf* landing;
+	const char* volatile* msgStore;
+	char errorMsg[256];
 	debug(int floating_allocations;)
 };
 
@@ -152,6 +156,7 @@ Extension* tigame_Game_loadExtension(Game* game,Extension_entryPoint* entry){
 	Extension* ext = malloc(sizeof(Extension));
 	ext->entryPoint = entry;
 	ext->cleanup_fn = NULL;
+	ext->debugFn = NULL;
 	ext->name = NULL;
 	ext->version = -1;
 	ext->data = NULL;
@@ -316,13 +321,39 @@ static const Food* getFood(Game* game,const char* name){
 	return data->foodCalls->getFood(game,name,data->foodDispatcher);
 }
 
+static void setDebugFn(Game* game,Extension* ext,Extension_entryPoint* debug_fn){
+    ext->debugFn = debug_fn;
+}
+
+static void minimumRequired(Game* game,uint16_t ver){
+    if(TIGAME_COM_ABI<ver)
+        (*game)->unrecoverable(game,"Extension Targets the future. Expected Minimum Version %hx, running on %hx",ver,TIGAME_COM_ABI);
+}
+
+static __attribute__((format(printf,2,3),noreturn)) void unrecoverable(Game* game,const char* fmt,...){
+    va_list list;
+    va_start(list,fmt);
+    struct GameData* data = getGameData(game);
+    vsnprintf(data->errorMsg,256,fmt,list);
+    va_end(list);
+    if(data->landing) {
+        *(data->msgStore) = data->errorMsg;
+        longjmp(*data->landing, 1);
+    }else{
+        puts(data->errorMsg);
+        abort();
+    }
+}
+
+
+
 /*
 Food* (*newFood)(Game*,const char*,FoodProperties);
 const FoodProperties* (*getFoodProperties)(Game*,const Food*);
 const Food* (*getFood)(Game*,const char*);
 */
 
-static struct GameCalls CALLS = {
+static const struct GameCalls CALLS = {
 	NULL,
 	NULL,
 	NULL,
@@ -343,8 +374,8 @@ static struct GameCalls CALLS = {
 	tigame_Game_loadExtension,
 	setExtensionData,
 	getExtensionData,
-	NULL,
-	NULL,
+    setDebugFn,
+	minimumRequired,
 	NULL,
 	newTiles,
 	addTileEnterCallback,
@@ -378,7 +409,8 @@ Game* tigame_Game_allocateCOMStructure(){
 	debug(data->floating_allocations = 0);
 	data->version = GAME_VERSION;
 
-	data->extensions = LinkedList_new(free);;
+	data->extensions = LinkedList_new(free);
+	data->landing = NULL;
 	Extension* comAPI = tigame_alloc(structure,sizeof(Extension));
 	comAPI->version = TIGAME_COM_ABI;
 	comAPI->name = "comapi";
@@ -405,10 +437,16 @@ void tigame_Game_printExtensionInfo(Game* game){
 	for(Iterator* list = LinkedList_begin(data->extensions);list;list = LinkedList_next(list)){
 		Extension* ext = LinkedList_dereference(list);
 		(*game)->printf(game,"Extension Loaded: %s at version %hd. (Entry point %p, Cleanup %p, Data %p)\n",ext->name,ext->version,(void*)ext->entryPoint,(void*)ext->cleanup_fn,ext->data);
+	    if(ext->debugFn)
+	        ext->debugFn(game,ext);
 	}
 }
 
 
-
+void tigame_Game_setErrorLandingPad(Game* game,jmp_buf* buf,const char*volatile*  msgStore){
+    struct GameData* data = getGameData(game);
+    data->msgStore = msgStore;
+    data->landing = buf;
+}
 
 

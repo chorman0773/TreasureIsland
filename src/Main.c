@@ -16,7 +16,16 @@
 int main(){
     const char* menu_items[] = {"Play Game","Load Game","View Scores","Debug","Exit",0};
     Random* rand = Random_new();
+    jmp_buf landing;
+    const char* volatile msg;
     Game* game = tigame_Game_allocateCOMStructure();
+    if(setjmp(landing)){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+        (*game)->printf(game,"Unrecoverable Game error: %s",msg);
+#pragma clang diagnostic pop
+    }
+    tigame_Game_setErrorLandingPad(game,&landing,&msg);
     Random_seed(rand);
     (*game)->printf(game,"Treasure Island Game: Initialized with Version %hd\n",(*game)->getVersion(game));
     (*game)->loadExtension(game,tigame_Tiles_main);

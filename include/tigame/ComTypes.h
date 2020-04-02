@@ -29,15 +29,6 @@ enum{
 	TIGAME_OK = 0
 };
 
-typedef struct{
-	uint64_t high;
-	uint64_t low;
-}UUID;
-
-inline UUID UUID_nil(){
-	static const UUID nil = {0,0};
-	return nil;
-}
 
 typedef uint16_t tigame_version;
 

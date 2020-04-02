@@ -1,6 +1,6 @@
 #include <internal/Game.h>
 #include <tigame/Game.h>
-#include <tigame/Map.h>
+#include <Map.h>
 #include <string.h>
 
 /*
@@ -26,7 +26,7 @@ struct Item{
     ActionResult(*generateCallback)(Game*,Random*,Player*,Map*,Position,ItemStack*)
 };
 
-static tigame_bool strless(const void* a,const void* b){
+static bool strless(const void* a,const void* b){
 	return strcmp((const char*)a,(const char*)b)<0;
 }
 
@@ -36,7 +36,7 @@ static Item* newItem(Game* game,const char* name,ItemProperties properties,Exten
     Item* item = (Item*) (*game)->alloc(game,sizeof(Item));
     item->name = name;
     item->properties = properties;
-    map_put(map,name,item,game);
+    map_put(map,name,item);
     return item;
 }
 
@@ -81,8 +81,12 @@ static const struct ItemDispatcherCalls DISPATCHER_CALLS = {
 
 static void cleanup(Game* game,Extension* ext){
     TreeMap* map = (TreeMap*) (*game)->getExtensionDataStruct(game,ext);
-    map_free(game,map);
+    map_free(map);
     (*game)->printf(game,"Cleaned up Item Dispatcher Builtin\n");
+}
+
+static void debug(Game* game,Extension* ext){
+    TreeMap* map = (TreeMap*)(*game)->getExtensionDataStruct(game,ext);
 }
 
 void tigame_Items_main(Game* game,Extension* ext){
@@ -90,8 +94,9 @@ void tigame_Items_main(Game* game,Extension* ext){
     (*game)->setExtensionName(game,ext,"tigame_item_dispatcher");
     (*game)->setExtensionVersion(game,ext,0);
     (*game)->setExtensionCleanupFn(game,ext,cleanup);
-    TreeMap* map = map_new(game,strless,(*game)->free);
+    TreeMap* map = map_new(game,strless,(*game)->free,NULL);
     (*game)->setExtensionDataStruct(game,ext,map);
+    (*game)->setExtensionDebugFunction(game,ext,debug);
     tigame_Game_setItemDispatcher(game,ext,&DISPATCHER_CALLS);
 }
 

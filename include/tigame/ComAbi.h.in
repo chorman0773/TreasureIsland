@@ -7,6 +7,8 @@
 	The Defined TIGAME_ABI_VERSION is @tigame_abi@
 */
 
-#define TIGAME_COM_ABI @tigame_abi@
+#include <stdint.h>
+
+#define TIGAME_COM_ABI UINT16_C(@tigame_abi@)
 
 #endif

@@ -18,6 +18,8 @@ extern"C"{
 #include <stddef.h>
 #include <stdbool.h>
 
+#include <Stream.h>
+
 typedef struct Random Random;
 
 typedef struct Tile Tile;
@@ -27,7 +29,6 @@ typedef struct Player Player;
 typedef struct Map Map;
 typedef struct ItemStack ItemStack;
 typedef struct Extension Extension;
-
 
 
 typedef struct Position{
@@ -102,15 +103,37 @@ typedef struct RandomCalls{
 	void(*nextBytes)(Random*,void*,size_t);
 } RandomCalls;
 
+
 struct GameCalls{
 	void* reserved1; //Reserved for COM Compatibility
 	void* reserved2; //Set to NULL
 	void* reserved3;
 	void* reserved4;
-	void* (*alloc)(Game*,size_t);
-	void  (*free)(Game*,void*);
-	void (__attribute__((format(printf,2,3)))*printf)(Game*,const char*,...);
+	/**
+	* Allocates data in an unspecified manner.
+	*/
+	void* (__attribute__((alloc_size(2)))* alloc)(Game* game,size_t size);
+	/**
+	 * frees data obtained by a call to alloc with the same game argument.
+	 * If ptr is not NULL, it shall have been allocated by a call to alloc with the same argument, or the behavior is undefined.
+	 */
+	void  (*free)(Game* game,void* ptr);
+
+	/**
+	 * Prints a given format string in an unspecified manner.
+	 * The String is formatted as though by a call to printf.
+	 * @param fmt Format String for the output
+	 * @param ... Format Arguements
+	 */
+	void (__attribute__((format(printf,2,3)))*printf)(Game* game,const char* fmt,...);
+	/**
+	 * Obtains a pointer to a structure that can be used to obtain random numbers, given a Pointer to a Random* otherwise passed.
+	 */
 	const RandomCalls* (*getRandomCalls)(Game*);
+	/**
+	 * Sets the name of the extension being initialized.
+	 * It is recommended that 
+	 */
 	void (*setExtensionName)(Game*,Extension*,const char*);
 	void (*setExtensionVersion)(Game*,Extension*,tigame_version);
 	void (*setExtensionCleanupFn)(Game*,Extension*,void(*)(Game*,Extension*));
@@ -123,9 +146,9 @@ struct GameCalls{
 	Extension* (*loadExtension)(Game*,Extension_entryPoint*);
 	void (*setExtensionDataStruct)(Game*,Extension*,void*);
 	void* (*getExtensionDataStruct)(Game*,Extension*);
-	void* reserved7;//Reserved for future versions. This may be non-NULL.
-	void* reserved8;
-	void* reserved9;
+	void (*setExtensionDebugFunction)(Game*,Extension*,Extension_entryPoint*);
+	void (*minimumRequired)(Game*,uint16_t);
+	void (__attribute__((format(printf,2,3),noreturn))*unrecoverable)(Game*,const char*,...);
 	Tile* (*newTile)(Game*,const char*,TileProperties);
 	void(*addTileEnterCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,Direction));
 	void(*addTileLeaveCallback)(Game*,Tile*,ActionResult(*)(Game*,Random*,Player*,Map*,Position,Direction));
@@ -177,6 +200,10 @@ struct GameCalls{
 	tigame_bool (*initGame)(Game*,Random*);
 	uint8_t (*getPlayLength)(Game*);
 	void (*tick)(Game*);
+    void* reserved20;
+    void* reserved21;
+    void* reserved22;
+    void* reserved23;
 };
 
 
