@@ -8,7 +8,7 @@
 #include <dlfcn.h>
 #include <tigame/Game.h>
 #include <internal/Game.h>
-#include <stdlib.h>
+#include <unistd.h>
 #include <dirent.h>
 #include <string.h>
 #include <limits.h>
@@ -28,7 +28,7 @@ static void cleanup(Game* game,Extension* ext){
 static void load_extension(const char* relpath,Game* game,struct ExtLoaderData* ext);
 static void find_extensions(Game* game,struct ExtLoaderData* ext);
 
-static void close(void* dso){
+static void extclose(void* dso){
     dlclose(dso);
 }
 
@@ -38,8 +38,11 @@ void tigame_ExtLoad_main(Game* game,Extension* ext){
     (*game)->setExtensionVersion(game,ext,0);
     (*game)->setExtensionCleanupFn(game,ext,cleanup);
     struct ExtLoaderData* data = (struct ExtLoaderData*) (*game)->alloc(game,sizeof(struct ExtLoaderData));
-    data->list = LinkedList_new(close);
-    find_extensions(game,data);
+    data->list = LinkedList_new(extclose);
+    if(!getuid())
+        find_extensions(game,data);
+    else
+        (*game)->printf(game,"Running game as root (note: this is a bad idea). Extensions are not loaded for security reasons");
     (*game)->setExtensionDataStruct(game,ext,data);
 }
 
@@ -50,7 +53,7 @@ static void find_extensions(Game* game,struct ExtLoaderData* ext){
     struct dirent* ent;
     while((ent = readdir(dir)))
         if(strstr(ent->d_name,".so")){
-            strcpy(name+13,ent->d_name);
+            strncpy(name+13,ent->d_name,NAME_MAX);
             load_extension(name,game,ext);
         }
 }

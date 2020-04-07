@@ -23,6 +23,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories(include)
 include_directories(libconinteract/include)
 include_directories(random/include)
+include_directories(util/collect/include util/io/include util/shadenbt/include util/time/include)
 
 add_subdirectory(extensions)
 add_subdirectory(libconinteract)

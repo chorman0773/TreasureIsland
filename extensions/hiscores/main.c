@@ -12,9 +12,6 @@
 #include <setjmp.h>
 #include <string.h>
 
-extern const char tigame_ExtensionName[];
-extern const uint16_t tigame_ExtensionVersion;
-extern const uint16_t tigame_MinimumVersion;
 
 const char tigame_ExtensionName[] = "hiscores";
 const uint16_t tigame_ExtensionVersion = 0;
